@@ -103,6 +103,14 @@ public class Node {
         return nodes;
     }
 
+    public int getPosX() {
+        return posX;
+    }
+
+    public int getPosY() {
+        return posY;
+    }
+
     public Node getUp() {
         return up;
     }

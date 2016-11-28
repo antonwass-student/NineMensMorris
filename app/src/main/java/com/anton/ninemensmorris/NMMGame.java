@@ -99,6 +99,10 @@ public class NMMGame {
         nextTurn();
     }
 
+    public Node[] getGameboard(){
+        return this.gameboard;
+    }
+
     public GameStates getGameState(){
         return currentState;
     }
