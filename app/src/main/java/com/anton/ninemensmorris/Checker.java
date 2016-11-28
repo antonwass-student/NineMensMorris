@@ -10,4 +10,9 @@ public class Checker {
     public Checker(NMMGame.PlayerColor player){
         this.player = player;
     }
+
+
+    public NMMGame.PlayerColor getPlayer(){
+        return this.player;
+    }
 }
