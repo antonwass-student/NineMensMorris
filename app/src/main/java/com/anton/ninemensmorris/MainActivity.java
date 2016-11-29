@@ -2,8 +2,10 @@ package com.anton.ninemensmorris;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,9 +20,19 @@ public class MainActivity extends AppCompatActivity {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
-        this.game = new NMMGame();
+
+        this.game = (NMMGame)getLastCustomNonConfigurationInstance();
+        if(this.game == null)
+            this.game = new NMMGame();
+
         this.view = (CustomView)findViewById(R.id.surface_view);
-        view.setGame(game);
+        this.view.setGame(game);
+        this.view.setStateText((TextView)findViewById(R.id.game_state));
+    }
+
+    @Override
+    public Object onRetainCustomNonConfigurationInstance() {
+        return game;
     }
 
     @Override

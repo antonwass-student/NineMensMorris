@@ -1,5 +1,7 @@
 package com.anton.ninemensmorris;
 
+import android.view.MotionEvent;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,18 +35,33 @@ public class NMMGame {
         init();
     }
 
-    private void prepareTurn(){
+    public void handleInput(Node touchedNode){
 
-        if(checkClosedIn() == true){
-            if(turn.equals(PlayerColor.BLUE))
-                winner = PlayerColor.RED;
-            else
-                winner = PlayerColor.BLUE;
-
-            currentState = GameStates.GAMEOVER;
-
-            return;
+        if(touchedNode != null) {
+            //if node was touched. do nothing.
+            switch (currentState) {
+                case PLACE:
+                    //attempt to place a checker where user touched.
+                    placeChecker(touchedNode);
+                    //calculate which node was pressed.
+                    break;
+                case KILL:
+                    //attempt to delete checker
+                    killNode(touchedNode);
+                    break;
+                case MOVE:
+                    //show available nodes to move to
+                    moveChecker(touchedNode);
+                    break;
+                case SELECT:
+                    //show selectable nodes
+                    selectNode(touchedNode);
+                    break;
+            }
         }
+    }
+
+    private void prepareTurn(){
 
         if(turn == PlayerColor.BLUE)
             currentCheckers = blueCheckers;
@@ -57,46 +74,73 @@ public class NMMGame {
             currentState = GameStates.PLACE;
         }else{
             //move a checker
+
+            if(checkClosedIn() == true){
+                if(turn.equals(PlayerColor.BLUE))
+                    winner = PlayerColor.RED;
+                else
+                    winner = PlayerColor.BLUE;
+
+                currentState = GameStates.GAMEOVER;
+
+                return;
+            }
+
             placedCheckers = calcPlacedCheckers();
             currentState = GameStates.SELECT;
+
         }
     }
 
     public void placeChecker(Node putHere){
-        putHere.setChecker(currentCheckers.remove(0));
 
-        if(putHere.checkMill()){
-            //kill someone!
-            killableNodes = calcKillableNodes();
-            currentState = GameStates.KILL;
-        }else{
-            nextTurn();
+        if(putHere.getChecker() == null){
+            putHere.setChecker(currentCheckers.remove(0));
+
+            if(putHere.checkMill()){
+                //kill someone!
+                killableNodes = calcKillableNodes();
+                currentState = GameStates.KILL;
+            }else{
+                nextTurn();
+            }
         }
     }
 
     public void selectNode(Node selected){
         //show all available moves.
-        this.selectedNode = selected;
-        this.availableMoves = selected.getFreeNeighbors();
-        this.currentState = GameStates.MOVE;
+        if(selected.getChecker()!=null && selected.getChecker().getPlayer().equals(turn)){
+            if(selected.getFreeNeighbors().size()>0){
+                this.selectedNode = selected;
+                this.availableMoves = selected.getFreeNeighbors();
+                this.currentState = GameStates.MOVE;
+            }
+        }
     }
 
-    public void moveChecker(Node from, Node to){
-        to.setChecker(from.takeChecker());
-        //do some animation
+    public void moveChecker(Node to){
 
-        if(to.checkMill()){
-            //kill someone!
-            killableNodes = calcKillableNodes();
-            currentState = GameStates.KILL;
-        }else{
-            nextTurn();
+        List<Node> neighbors = selectedNode.getFreeNeighbors();
+
+        if(neighbors.contains(to)){
+            to.setChecker(selectedNode.takeChecker());
+            //do some animation
+
+            if(to.checkMill()){
+                //kill someone!
+                killableNodes = calcKillableNodes();
+                currentState = GameStates.KILL;
+            }else{
+                nextTurn();
+            }
         }
     }
 
     public void killNode(Node toKill){
-        toKill.deleteChecker();
-        nextTurn();
+        if(toKill.getChecker()!=null && !toKill.getChecker().getPlayer().equals(turn)){
+            toKill.deleteChecker();
+            nextTurn();
+        }
     }
 
     public Node[] getGameboard(){
@@ -111,21 +155,25 @@ public class NMMGame {
         return turn;
     }
 
+    public PlayerColor getWinner(){return winner;}
+
     private List<Node> calcKillableNodes(){
         List<Node> nodes = new ArrayList();
         for(Node n : gameboard){
-            if(!n.getChecker().getPlayer().equals(turn)){
-                nodes.add(n);
-            }
+            if(n.getChecker() != null)
+                if(!n.getChecker().getPlayer().equals(turn))
+                    nodes.add(n);
+
         }
         return nodes;
     }
 
     private boolean checkClosedIn(){
         for(Node n: gameboard)
-            if(n.getChecker().getPlayer().equals(turn))
-                if(n.getFreeNeighbors().size() > 0)
-                    return false;
+            if(n.getChecker() != null)
+                if(n.getChecker().getPlayer().equals(turn))
+                    if(n.getFreeNeighbors().size() > 0)
+                        return false;
 
         return true;
     }
@@ -154,13 +202,15 @@ public class NMMGame {
             gameboard[i] = new Node();
 
         setNeighbors();
+
+        prepareTurn();
     }
 
     private List<Node> calcPlacedCheckers(){
         List<Node> nodes = new ArrayList();
 
         for(Node n : gameboard){
-            if(n.getChecker().getPlayer().equals(turn)){
+            if(n.getChecker() != null && n.getChecker().getPlayer().equals(turn)){
                 nodes.add(n);
             }
         }
@@ -179,7 +229,6 @@ public class NMMGame {
 
         return nodes;
     }
-
 
     private void setNeighbors(){
         gameboard[0].setNeighbors(null, gameboard[1], gameboard[7], null, 0, 0);

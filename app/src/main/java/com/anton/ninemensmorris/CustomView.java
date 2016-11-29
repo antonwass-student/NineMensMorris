@@ -5,8 +5,12 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.widget.TextView;
 
 import java.util.List;
 
@@ -22,6 +26,7 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
     Paint paintWhite;
     Paint paintBlack;
     NMMGame game;
+    TextView stateText;
 
     public CustomView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -41,16 +46,13 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
     public void setGame(NMMGame game){
         this.game = game;
     }
+    public void setStateText(TextView v){this.stateText = v;}
 
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        drawNodes(game.getGameboard());
-    }
+    public void surfaceCreated(SurfaceHolder holder) {draw();}
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
-    }
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
@@ -74,27 +76,29 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
         paintBlack.setColor(Color.BLACK);
     }
 
-    public void drawNodes(Node[] nodes){
+    public void draw(){
+        Node[] nodes = game.getGameboard();
         Canvas canvas = holder.lockCanvas();
+
 
         drawBoard(canvas, nodes);
 
         Paint usePaint = null;
         for(int i = 0; i < nodes.length; i++){
-            if(nodes[i].getChecker() == null)
+            int circleRadius = 50;
+            if(nodes[i].getChecker() == null){
                 usePaint = paintBlack;
+                circleRadius = 20;
+            }
             else if(nodes[i].getChecker().getPlayer().equals(NMMGame.PlayerColor.BLUE))
                 usePaint = paintBlue;
             else
                 usePaint = paintRed;
 
-            float w = canvas.getWidth()/7;
-            float h = canvas.getHeight()/7;
-
             canvas.drawCircle(
-                    w/2 + nodes[i].getPosX() * w,
-                    h/2 + nodes[i].getPosY() * h,
-                    20, usePaint);
+                    nodes[i].getPosXScaled(getWidth()),
+                    nodes[i].getPosYScaled(getHeight()),
+                    circleRadius, usePaint);
         }
 
         holder.unlockCanvasAndPost(canvas);
@@ -105,57 +109,53 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
         paintBlack.setStyle(Paint.Style.STROKE);
         paintBlack.setStrokeWidth(3);
 
-        float w = canvas.getWidth()/7;
-        float h = canvas.getHeight()/7;
 
-        canvas.drawRect(
-                w/2+nodes[0].getPosX()* w,
-                h/2+nodes[0].getPosY()* h,
-                w/2+nodes[4].getPosX()* w,
-                h/2+nodes[4].getPosY()* h,
-                paintBlack);
-        canvas.drawRect(
-                w/2+nodes[8].getPosX()* w,
-                h/2+nodes[8].getPosY()* h,
-                w/2+nodes[12].getPosX()*w,
-                h/2+nodes[12].getPosY() * h,
-                paintBlack);
-        canvas.drawRect(
-                w/2+nodes[16].getPosX()* w,
-                h/2+nodes[16].getPosY()* h,
-                w/2+nodes[20].getPosX()* w,
-                h/2+nodes[20].getPosY()* h,
-                paintBlack);
-
-        canvas.drawLine(
-                w/2+nodes[1].getPosX()*w,
-                h/2+nodes[1].getPosY()*h,
-                w/2+nodes[17].getPosX()*w,
-                h/2+nodes[17].getPosY()*h,
-                paintBlack);
-
-        canvas.drawLine(
-                w/2+nodes[3].getPosX()*w,
-                h/2+nodes[3].getPosY()*h,
-                w/2+nodes[19].getPosX()*w,
-                h/2+nodes[19].getPosY()*h,
-                paintBlack);
-
-        canvas.drawLine(
-                w/2+nodes[5].getPosX()*w,
-                h/2+nodes[5].getPosY()*h,
-                w/2+nodes[21].getPosX()*w,
-                h/2+nodes[21].getPosY()*h,
-                paintBlack);
-
-        canvas.drawLine(
-                w/2+nodes[7].getPosX()*w,
-                h/2+nodes[7].getPosY()*h,
-                w/2+nodes[23].getPosX()*w,
-                h/2+nodes[23].getPosY()*h,
-                paintBlack);
+        int h = getHeight();
+        int w = getWidth();
+        //draw lines
+        for(Node n : nodes){
+            if(n.getUp() != null)
+                canvas.drawLine(n.getPosXScaled(w), n.getPosYScaled(h), n.getUp().getPosXScaled(w), n.getUp().getPosYScaled(h), paintBlack);
+            if(n.getRight() != null)
+                canvas.drawLine(n.getPosXScaled(w), n.getPosYScaled(h), n.getRight().getPosXScaled(w), n.getRight().getPosYScaled(h), paintBlack);
+            if(n.getDown() != null)
+                canvas.drawLine(n.getPosXScaled(w), n.getPosYScaled(h), n.getDown().getPosXScaled(w), n.getDown().getPosYScaled(h), paintBlack);
+            if(n.getLeft() != null)
+                canvas.drawLine(n.getPosXScaled(w), n.getPosYScaled(h), n.getLeft().getPosXScaled(w), n.getLeft().getPosYScaled(h), paintBlack);
+        }
 
         paintBlack.setStyle(Paint.Style.FILL);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        stateText.setText("");
+        game.handleInput(findTouchedNode(event));
+
+        if(game.getGameState().equals(NMMGame.GameStates.GAMEOVER)){
+            stateText.append("Winner is " + game.getWinner().toString() + "!!!");
+        }else{
+            stateText.append("\tState: " + game.getGameState().toString());
+            stateText.append("\t Turn: " + game.getTurn().toString());
+        }
+
+        draw();
+
+        return super.onTouchEvent(event);
+    }
+
+    private Node findTouchedNode(MotionEvent event){
+        for(Node n : game.getGameboard()){
+            if(calcDistance(n.getPosXScaled(getWidth()), n.getPosYScaled(getHeight()),event.getX(), event.getY()) < 100){
+                return n;
+            }
+        }
+        return null;
+    }
+
+    private float calcDistance(float x1, float y1, float x2, float y2){
+        return (float)Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
     }
 
     /*
