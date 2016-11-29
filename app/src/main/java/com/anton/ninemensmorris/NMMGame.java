@@ -11,6 +11,7 @@ import java.util.List;
 
 public class NMMGame {
 
+    private String name;
     private PlayerColor winner;
     private PlayerColor turn;
     private GameStates currentState = GameStates.PLACE;
@@ -19,14 +20,13 @@ public class NMMGame {
     private ArrayList<Checker> blueCheckers = new ArrayList();
     private ArrayList<Checker> redCheckers = new ArrayList();
 
-
     private List<Checker> currentCheckers;
-    private List<Node> availableNodes;
-    private List<Node> placedCheckers;
 
     private Node selectedNode;
-    private List<Node> availableMoves;
 
+    private List<Node> availableMoves;
+    private List<Node> availableNodes;
+    private List<Node> placedCheckers;
     private List<Node> killableNodes;
 
 
@@ -157,6 +157,14 @@ public class NMMGame {
 
     public PlayerColor getWinner(){return winner;}
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     private List<Node> calcKillableNodes(){
         List<Node> nodes = new ArrayList();
         for(Node n : gameboard){
@@ -230,7 +238,7 @@ public class NMMGame {
         return nodes;
     }
 
-    private void setNeighbors(){
+    public void setNeighbors(){
         gameboard[0].setNeighbors(null, gameboard[1], gameboard[7], null, 0, 0);
         gameboard[1].setNeighbors(null, gameboard[2], gameboard[9], gameboard[0], 3, 0);
         gameboard[2].setNeighbors(null, null, gameboard[3], gameboard[1], 6, 0);

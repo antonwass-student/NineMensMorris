@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/new_game"
+        android:icon="@drawable/checker"
+        android:title="New Game"/>
+
+    <item
+        android:id="@+id/load_game"
+        android:title="Load game">
+
+        <menu>
+            <item android:id="@+id/item1" android:title="Placeholder"/>
+        </menu>
+    </item>
+
+
+</menu>

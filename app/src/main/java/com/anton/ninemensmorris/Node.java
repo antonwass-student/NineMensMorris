@@ -12,10 +12,10 @@ import java.util.List;
 
 public class Node{
     private Checker checker;
-    private Node up;
-    private Node right;
-    private Node left;
-    private Node down;
+    private transient Node up;
+    private transient Node right;
+    private transient Node left;
+    private transient Node down;
 
     private int posX, posY;
 

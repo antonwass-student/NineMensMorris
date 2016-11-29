@@ -21,12 +21,14 @@ import java.util.List;
 public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
 
     private SurfaceHolder holder;
-    Paint paintRed;
-    Paint paintBlue;
-    Paint paintWhite;
-    Paint paintBlack;
-    NMMGame game;
-    TextView stateText;
+    private Paint paintRed;
+    private Paint paintBlue;
+    private Paint paintWhite;
+    private Paint paintBlack;
+    private NMMGame game;
+    private TextView stateText;
+
+    int circleRadius;
 
     public CustomView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -49,10 +51,15 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
     public void setStateText(TextView v){this.stateText = v;}
 
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {draw();}
+    public void surfaceCreated(SurfaceHolder holder) {
+        circleRadius = (int)(0.02f*(getWidth()+getHeight()));
+        draw();
+    }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        circleRadius = (int)(0.02f*(getWidth()+getHeight()));
+    }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
@@ -85,10 +92,10 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
 
         Paint usePaint = null;
         for(int i = 0; i < nodes.length; i++){
-            int circleRadius = 50;
+            circleRadius = (int)(0.02f*(getWidth()+getHeight()));
             if(nodes[i].getChecker() == null){
                 usePaint = paintBlack;
-                circleRadius = 20;
+                circleRadius = (int)(0.01f*(getWidth()+getHeight()));
             }
             else if(nodes[i].getChecker().getPlayer().equals(NMMGame.PlayerColor.BLUE))
                 usePaint = paintBlue;
@@ -147,7 +154,7 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
 
     private Node findTouchedNode(MotionEvent event){
         for(Node n : game.getGameboard()){
-            if(calcDistance(n.getPosXScaled(getWidth()), n.getPosYScaled(getHeight()),event.getX(), event.getY()) < 100){
+            if(calcDistance(n.getPosXScaled(getWidth()), n.getPosYScaled(getHeight()),event.getX(), event.getY()) < 1.1f*circleRadius){
                 return n;
             }
         }
