@@ -170,14 +170,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void saveGame(){
         Gson gson = new Gson();
+        SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
 
         if(!game.getGameState().equals(NMMGame.GameStates.GAMEOVER)){
             String activeGameJson = gson.toJson(game);
             //save in background.
-            SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
+
 
             editor.putString("game", activeGameJson);
+            editor.commit();
+        }else{
+            editor.remove("game");
             editor.commit();
         }
 

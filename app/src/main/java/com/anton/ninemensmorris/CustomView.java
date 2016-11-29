@@ -25,6 +25,8 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
     private Paint paintBlue;
     private Paint paintWhite;
     private Paint paintBlack;
+    private Paint paintLightBlue;
+    private Paint paintLightRed;
     private NMMGame game;
     private TextView stateText;
 
@@ -81,11 +83,20 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
 
         paintBlack = new Paint();
         paintBlack.setColor(Color.BLACK);
+
+        paintLightBlue = new Paint();
+        paintLightBlue.setARGB(255, 167, 207, 249);
+        paintLightBlue.setStyle(Paint.Style.FILL);
+
+        paintLightRed = new Paint();
+        paintLightRed.setARGB(255, 249, 179, 179);
+        paintLightRed.setStyle(Paint.Style.FILL);
     }
 
     public void draw(){
         Node[] nodes = game.getGameboard();
         Canvas canvas = holder.lockCanvas();
+
 
 
         drawBoard(canvas, nodes);
@@ -112,7 +123,11 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
     }
     
     private void drawBoard(Canvas canvas, Node[] nodes){
-        canvas.drawRect(0,0, canvas.getWidth(), canvas.getHeight(), paintWhite);
+        if(game.getTurn().equals(NMMGame.PlayerColor.BLUE))
+            canvas.drawRect(0,0,getWidth(), getHeight(), paintLightBlue);
+        else
+            canvas.drawRect(0,0,getWidth(), getHeight(), paintLightRed);
+
         paintBlack.setStyle(Paint.Style.STROKE);
         paintBlack.setStrokeWidth(3);
 
