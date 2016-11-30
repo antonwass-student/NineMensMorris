@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
         gamesList = new ArrayList();
 
         loadGames();
-
         loadSavedStateGame();
 
         if(this.game == null)

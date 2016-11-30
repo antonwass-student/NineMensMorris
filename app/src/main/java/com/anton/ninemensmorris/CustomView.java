@@ -12,6 +12,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +26,8 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
     private Paint paintBlue;
     private Paint paintWhite;
     private Paint paintBlack;
+    private Paint paintYellow;
+    private Paint paintGreen;
     private Paint paintLightBlue;
     private Paint paintLightRed;
     private NMMGame game;
@@ -85,6 +88,14 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
         paintBlack = new Paint();
         paintBlack.setColor(Color.BLACK);
 
+        paintYellow = new Paint();
+        paintYellow.setColor(Color.YELLOW);
+
+        paintGreen = new Paint();
+        paintGreen.setColor(Color.GREEN);
+
+
+
         paintLightBlue = new Paint();
         paintLightBlue.setARGB(255, 167, 207, 249);
         paintLightBlue.setStyle(Paint.Style.FILL);
@@ -117,6 +128,19 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
                     nodes[i].getPosYScaled(getHeight()),
                     circleRadius, usePaint);
         }
+
+        if(game.getGameState() == NMMGame.GameStates.MOVE){
+            List<Node> available = game.getSelectedNode().getFreeNeighbors();
+            usePaint = paintYellow;
+            circleRadius = (int)(0.01f*(getWidth()+getHeight()));
+            for(int i=0; i< available.size(); i++){
+                canvas.drawCircle(
+                        available.get(i).getPosXScaled(getWidth()),
+                        available.get(i).getPosYScaled((getHeight())),
+                        circleRadius, usePaint);
+            }
+        }
+
 
         holder.unlockCanvasAndPost(canvas);
 

@@ -121,6 +121,11 @@ public class NMMGame {
     public void moveChecker(Node to){
 
         List<Node> neighbors = selectedNode.getFreeNeighbors();
+        if(selectedNode == to){
+            currentState = GameStates.SELECT;
+            selectedNode = null;
+            return;
+        }
 
         if(neighbors.contains(to)){
             to.setChecker(selectedNode.takeChecker());
@@ -134,6 +139,10 @@ public class NMMGame {
                 nextTurn();
             }
         }
+    }
+
+    public Node getSelectedNode() {
+        return selectedNode;
     }
 
     public void killNode(Node toKill){
@@ -226,7 +235,7 @@ public class NMMGame {
         return nodes;
     }
 
-    private List<Node> calcAvailableNodes(){
+    public List<Node> calcAvailableNodes(){
         List<Node> nodes = new ArrayList();
 
         for(Node n : gameboard){
