@@ -17,6 +17,11 @@ public class Node{
     private transient Node left;
     private transient Node down;
 
+    private transient Node NE;
+    private transient Node NW;
+    private transient Node SE;
+    private transient Node SW;
+
     private int posX, posY;
 
     public void setNeighbors(Node up, Node right, Node down, Node left, int posX, int posY){
@@ -26,6 +31,7 @@ public class Node{
         this.left = left;
         this.posX = posX;
         this.posY = posY;
+
     }
 
     public Checker getChecker(){
