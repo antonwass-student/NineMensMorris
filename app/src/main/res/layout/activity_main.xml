@@ -22,7 +22,8 @@
             android:layout_weight="19"
             android:layout_height="match_parent"
             android:layout_width="match_parent"
-            android:id="@+id/game_state">
+            android:id="@+id/game_state"
+            android:textSize="14dp">
 
         </TextView>
 

@@ -55,7 +55,8 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         circleRadius = (int)(0.02f*(getWidth()+getHeight()));
-        draw();
+        if(game!=null)
+            draw();
     }
 
     @Override
@@ -97,8 +98,6 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
         Node[] nodes = game.getGameboard();
         Canvas canvas = holder.lockCanvas();
 
-
-
         drawBoard(canvas, nodes);
 
         Paint usePaint = null;
@@ -120,6 +119,8 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         holder.unlockCanvasAndPost(canvas);
+
+        drawTextInfo();
     }
     
     private void drawBoard(Canvas canvas, Node[] nodes){
@@ -149,18 +150,21 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
         paintBlack.setStyle(Paint.Style.FILL);
     }
 
+    public void drawTextInfo(){
+        stateText.setText("");
+        stateText.append("Game: " + game.getName());
+        if(game.getGameState().equals(NMMGame.GameStates.GAMEOVER)){
+            stateText.append("\t Winner is " + game.getWinner().toString() + "!!!");
+        }else{
+            stateText.append("\t State: " + game.getGameState().toString());
+            stateText.append("\t Turn: " + game.getTurn().toString());
+        }
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        stateText.setText("");
         game.handleInput(findTouchedNode(event));
-
-        if(game.getGameState().equals(NMMGame.GameStates.GAMEOVER)){
-            stateText.append("Winner is " + game.getWinner().toString() + "!!!");
-        }else{
-            stateText.append("\tState: " + game.getGameState().toString());
-            stateText.append("\t Turn: " + game.getTurn().toString());
-        }
 
         draw();
 

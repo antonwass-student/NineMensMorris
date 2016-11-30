@@ -17,6 +17,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -31,17 +32,15 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    CustomView view;
-    NMMGame game;
-    List<NMMGame> gamesList;
+    private CustomView view;
+    private NMMGame game;
+    private List<NMMGame> gamesList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        //getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
 
         gamesList = new ArrayList();
@@ -51,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         loadSavedStateGame();
 
         if(this.game == null)
-            this.game = new NMMGame();
+            newGame();
 
         this.view = (CustomView)findViewById(R.id.surface_view);
         this.view.setGame(game);
@@ -66,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-
         saveGame();
         super.onSaveInstanceState(outState);
     }
@@ -110,22 +108,27 @@ public class MainActivity extends AppCompatActivity {
             this.game.setNeighbors();
             this.view.setGame(game);
             this.view.draw();
-        }
-
-        switch(item.getItemId()){
-            case R.id.new_game:
-                newGame();
-                return true;
-            case R.id.load_game:
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+            return true;
+        }else{
+            switch(item.getItemId()){
+                case R.id.new_game:
+                    newGame();
+                    return true;
+                case R.id.load_game:
+                    return true;
+                default:
+                    return super.onOptionsItemSelected(item);
+            }
         }
     }
 
     @Override
-    public Object onRetainCustomNonConfigurationInstance() {
-        return game;
+    public boolean onTouchEvent(MotionEvent event) {
+        if(game.getGameState().equals(NMMGame.GameStates.GAMEOVER)){
+            gamesList.remove(game);
+            invalidateOptionsMenu();
+        }
+        return super.onTouchEvent(event);
     }
 
     @Override
@@ -168,53 +171,41 @@ public class MainActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * Saves all active games to the disk.
+     * Also saves current active game so that the user can continue
+     * his/her game when the app is opened again.
+     */
     private void saveGame(){
+        showToast("Saving games");
         Gson gson = new Gson();
         SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        if(!game.getGameState().equals(NMMGame.GameStates.GAMEOVER)){
-            String activeGameJson = gson.toJson(game);
-            //save in background.
+        if(game!=null){
+            if(!game.getGameState().equals(NMMGame.GameStates.GAMEOVER)){
+                String activeGameJson = gson.toJson(game);
+                //save in background.
 
 
-            editor.putString("game", activeGameJson);
-            editor.commit();
-        }else{
-            editor.remove("game");
-            editor.commit();
+                editor.putString("game", activeGameJson);
+                editor.commit();
+            }else{
+                editor.remove("game");
+                editor.commit();
+            }
         }
 
         //save to file system
-        String filename = "games.dat";
-        FileOutputStream outputStream = null;
-        PrintWriter printWriter = null;
-
-        try{
-            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-            printWriter = new PrintWriter(outputStream);
-
-            for(NMMGame g : gamesList){
-                if(!g.getGameState().equals(NMMGame.GameStates.GAMEOVER)){
-                    String json = gson.toJson(g);
-                    printWriter.println(json);
-                }
-            }
-            printWriter.flush();
-
-        }catch(Exception e){
-            e.printStackTrace();
-        }finally {
-            printWriter.close();
-            try {
-                outputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        //...using a task! ;)
+        SaveGameTask task = new SaveGameTask(this);
+        task.execute(gamesList);
 
     }
 
+    /**
+     * Loads an interrupted game. Not to be confused with games saved on the disk.
+     */
     private void loadSavedStateGame(){
         Gson gson = new Gson();
         SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
@@ -223,29 +214,30 @@ public class MainActivity extends AppCompatActivity {
         if(!prevGameJson.equals("")){
 
             this.game = gson.fromJson(prevGameJson, NMMGame.class);
-            this.game.setNeighbors();
+
+            if(game.getGameState().equals(NMMGame.GameStates.GAMEOVER)){
+                game = null;
+            }else{
+                this.game.setNeighbors();
+            }
         }
     }
 
+    /**
+     * Loads all games saved on the disk.
+     */
     private void loadGames(){
-        Gson gson = new Gson();
-        try{
-            InputStream inputStream = getApplicationContext().openFileInput("games.dat");
+        LoadGameTask task = new LoadGameTask(this);
+        task.execute("games.dat");
+    }
 
-            if(inputStream!=null){
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                String readString = "";
-                gamesList.clear();
-                while((readString = bufferedReader.readLine())!= null){
-                    NMMGame loadedGame = gson.fromJson(readString, NMMGame.class);
-                    loadedGame.setNeighbors();
-                    gamesList.add(loadedGame);
-                }
+    public void showToast(String msg){
+        Toast toast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
+        toast.show();
+    }
 
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+    public void setGamesList(List<NMMGame> games){
+        this.gamesList = games;
+        invalidateOptionsMenu();
     }
 }
