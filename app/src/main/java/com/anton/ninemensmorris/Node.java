@@ -46,6 +46,10 @@ public class Node{
         this.checker = null;
     }
 
+    /***
+     * Looks in horizontal and vertical directions if there are 3 checkers in a row.
+     * @return
+     */
     public boolean checkMill(){
 
         Node probe = this;
