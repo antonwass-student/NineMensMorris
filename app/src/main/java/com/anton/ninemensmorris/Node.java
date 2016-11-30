@@ -16,11 +16,7 @@ public class Node{
     private transient Node right;
     private transient Node left;
     private transient Node down;
-
-    private transient Node NE;
-    private transient Node NW;
-    private transient Node SE;
-    private transient Node SW;
+    private boolean animated = false;
 
     private int posX, posY;
 
@@ -137,6 +133,14 @@ public class Node{
         float h = height/7;
 
         return (int)(h/2+posY*h);
+    }
+
+    public void setAnimated(boolean animated){
+        this.animated = animated;
+    }
+
+    public boolean isAnimated(){
+        return animated;
     }
 
     public Node getUp() {

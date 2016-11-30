@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -32,8 +33,9 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
     private Paint paintLightRed;
     private NMMGame game;
     private TextView stateText;
+    private DrawThread drawThread;
 
-    int circleRadius;
+    private int circleRadius;
 
     public CustomView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -51,15 +53,20 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void setGame(NMMGame game){
-        this.game = game;
+        if(game!=null){
+            this.game = game;
+            this.game.prepareTurn();
+            drawTextInfo();
+        }
     }
     public void setStateText(TextView v){this.stateText = v;}
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         circleRadius = (int)(0.02f*(getWidth()+getHeight()));
-        if(game!=null)
-            draw();
+
+        drawThread = new DrawThread(this);
+        drawThread.start();
     }
 
     @Override
@@ -69,7 +76,8 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-
+        drawThread.stopRunning();
+        drawThread.interrupt();
     }
 
     private void init(){
@@ -94,8 +102,6 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
         paintGreen = new Paint();
         paintGreen.setColor(Color.GREEN);
 
-
-
         paintLightBlue = new Paint();
         paintLightBlue.setARGB(255, 167, 207, 249);
         paintLightBlue.setStyle(Paint.Style.FILL);
@@ -105,16 +111,24 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
         paintLightRed.setStyle(Paint.Style.FILL);
     }
 
-    public void draw(){
-        Node[] nodes = game.getGameboard();
-        Canvas canvas = holder.lockCanvas();
+    /**
+     * called by drawthread
+     * @param canvas
+     */
+    public void draw(Canvas canvas){
 
-        drawBoard(canvas, nodes);
+        if(game == null)
+            return;
+
+        Node[] nodes = game.getGameboard();
+        //Canvas canvas = holder.lockCanvas();
+
+        drawBoard(canvas);
 
         Paint usePaint = null;
         for(int i = 0; i < nodes.length; i++){
             circleRadius = (int)(0.02f*(getWidth()+getHeight()));
-            if(nodes[i].getChecker() == null){
+            if(nodes[i].isAnimated() || nodes[i].getChecker() == null){
                 usePaint = paintBlack;
                 circleRadius = (int)(0.01f*(getWidth()+getHeight()));
             }
@@ -127,6 +141,24 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
                     nodes[i].getPosXScaled(getWidth()),
                     nodes[i].getPosYScaled(getHeight()),
                     circleRadius, usePaint);
+        }
+
+        if(game.getAnimation() != null){
+            AnimatedChecker anim = game.getAnimation();
+
+            if(anim.isDone()){
+                game.setAnimation(null);
+            }else{
+                if(anim.getChecker().getPlayer().equals(NMMGame.PlayerColor.BLUE))
+                    usePaint = paintBlue;
+                else
+                    usePaint = paintRed;
+
+                canvas.drawCircle(anim.getPosXScaled(getWidth()),
+                        anim.getPosYScaled(getHeight()),
+                        circleRadius, usePaint);
+                anim.update();
+            }
         }
 
         if(game.getGameState() == NMMGame.GameStates.MOVE){
@@ -142,12 +174,15 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
 
-        holder.unlockCanvasAndPost(canvas);
+        //holder.unlockCanvasAndPost(canvas);
 
-        drawTextInfo();
+        //drawTextInfo();
     }
     
-    private void drawBoard(Canvas canvas, Node[] nodes){
+    private void drawBoard(Canvas canvas){
+
+        Node[] nodes = game.getGameboard();
+
         if(game.getTurn().equals(NMMGame.PlayerColor.BLUE))
             canvas.drawRect(0,0,getWidth(), getHeight(), paintLightBlue);
         else
@@ -175,13 +210,17 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void drawTextInfo(){
+        if(game == null || stateText == null)
+            return;
+
         stateText.setText("");
-        stateText.append("Game: " + game.getName());
         if(game.getGameState().equals(NMMGame.GameStates.GAMEOVER)){
-            stateText.append("\t Winner is " + game.getWinner().toString() + "!!!");
+            stateText.append("Winner is " + game.getWinner().toString() + "!!!");
         }else{
+            stateText.append("\t Red: "+game.getRedCheckers().size() + " \t Blue: " + game.getBlueCheckers().size());
             stateText.append("\t State: " + game.getGameState().toString());
             stateText.append("\t Turn: " + game.getTurn().toString());
+
         }
     }
 
@@ -190,7 +229,7 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
 
         game.handleInput(findTouchedNode(event));
 
-        draw();
+        //draw();
 
         return super.onTouchEvent(event);
     }
@@ -207,22 +246,4 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
     private float calcDistance(float x1, float y1, float x2, float y2){
         return (float)Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
     }
-
-    /*
-    private class DrawThread implements Runnable{
-        boolean running = true;
-
-        @Override
-        public void run() {
-
-            while(running){
-                Canvas canvas = holder.lockCanvas();
-
-                canvas.drawRect(0,0,100,100, paint);
-
-                holder.unlockCanvasAndPost(canvas);
-            }
-
-        }
-    }*/
 }

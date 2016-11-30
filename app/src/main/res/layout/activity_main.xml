@@ -23,7 +23,8 @@
             android:layout_height="match_parent"
             android:layout_width="match_parent"
             android:id="@+id/game_state"
-            android:textSize="14dp">
+            android:textSize="14dp"
+            android:textColor="#000">
 
         </TextView>
 

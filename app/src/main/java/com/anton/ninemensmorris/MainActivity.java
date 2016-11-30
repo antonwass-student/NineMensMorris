@@ -42,30 +42,25 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
+        this.view = (CustomView)findViewById(R.id.surface_view);
+        this.view.setStateText((TextView)findViewById(R.id.game_state));
 
         gamesList = new ArrayList();
 
         loadGames();
-        loadSavedStateGame();
+        //loadSavedStateGame();
 
         if(this.game == null)
             newGame();
-
-        this.view = (CustomView)findViewById(R.id.surface_view);
-        this.view.setGame(game);
-        this.view.setStateText((TextView)findViewById(R.id.game_state));
+        else{
+            this.view.setGame(game);
+        }
     }
 
     @Override
     public void onBackPressed() {
         saveGame();
         super.onBackPressed();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        saveGame();
-        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -78,6 +73,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         saveGame();
         super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     @Override
@@ -106,7 +106,8 @@ public class MainActivity extends AppCompatActivity {
             this.game = gamesList.get(item.getItemId());
             this.game.setNeighbors();
             this.view.setGame(game);
-            this.view.draw();
+            //this.view.draw();
+            setTitle(game.getName());
             return true;
         }else{
             switch(item.getItemId()){
@@ -127,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
             gamesList.remove(game);
             invalidateOptionsMenu();
         }
+        view.drawTextInfo();
         return super.onTouchEvent(event);
     }
 
@@ -154,8 +156,9 @@ public class MainActivity extends AppCompatActivity {
                 game = new NMMGame();
                 game.setName(input.getText().toString());
                 view.setGame(game);
-                view.draw();
+                //view.draw();
                 gamesList.add(game);
+                setTitle(game.getName());
                 invalidateOptionsMenu();
             }
         });
@@ -218,6 +221,7 @@ public class MainActivity extends AppCompatActivity {
                 game = null;
             }else{
                 this.game.setNeighbors();
+                setTitle(game.getName());
             }
         }
     }
