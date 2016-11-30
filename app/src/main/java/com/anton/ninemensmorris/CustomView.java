@@ -227,9 +227,8 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        game.handleInput(findTouchedNode(event));
-
-        //draw();
+        if(game!=null)
+            game.handleInput(findTouchedNode(event));
 
         return super.onTouchEvent(event);
     }

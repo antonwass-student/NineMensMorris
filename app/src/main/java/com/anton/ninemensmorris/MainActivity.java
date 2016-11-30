@@ -7,15 +7,22 @@ import android.os.PersistableBundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.text.InputType;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SubMenu;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         gamesList = new ArrayList();
 
         loadGames();
-        //loadSavedStateGame();
+        loadSavedStateGame();
 
         if(this.game == null)
             newGame();
@@ -140,12 +147,21 @@ public class MainActivity extends AppCompatActivity {
     private void newGame(){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Game name");
+        LayoutInflater factory = LayoutInflater.from(this);
+        builder.setTitle("Options");
 
-        final EditText input = new EditText(this);
+        final View optionsView = factory.inflate(R.layout.options_dialog, null);
+
+        final EditText input = (EditText)optionsView.findViewById(R.id.game_name);
+
+        final RadioGroup map_group = (RadioGroup)optionsView.findViewById(R.id.map_group);
+        final RadioGroup mode_group = (RadioGroup)optionsView.findViewById(R.id.mode_group);
+
+
 
         input.setInputType(InputType.TYPE_CLASS_TEXT);
-        builder.setView(input);
+
+        builder.setView(optionsView);
 
         builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             @Override
@@ -153,7 +169,40 @@ public class MainActivity extends AppCompatActivity {
 
                 saveGame(); //save old games
 
-                game = new NMMGame();
+                NMMGame.Map map;
+                NMMGame.GameMode mode;
+
+                RadioButton selectedMap = (RadioButton) map_group.findViewById(map_group.getCheckedRadioButtonId());
+                RadioButton selectedMode = (RadioButton) mode_group.findViewById(mode_group.getCheckedRadioButtonId());
+
+                switch(selectedMap.getText().toString()){
+                    case "Big":
+                        map = NMMGame.Map.BIG;
+                        break;
+                    case "Normal":
+                        map = NMMGame.Map.NORMAL;
+                        break;
+                    default:
+                        map = NMMGame.Map.NORMAL;
+                }
+
+                switch(selectedMode.getText().toString()){
+                    case "Nine":
+                        mode = NMMGame.GameMode.NINE;
+                        break;
+                    case "Six":
+                        mode = NMMGame.GameMode.SIX;
+                        break;
+                    case "Three":
+                        mode = NMMGame.GameMode.THREE;
+                        break;
+                    default:
+                        mode = NMMGame.GameMode.NINE;
+                        break;
+
+                }
+
+                game = new NMMGame(mode, map);
                 game.setName(input.getText().toString());
                 view.setGame(game);
                 //view.draw();
