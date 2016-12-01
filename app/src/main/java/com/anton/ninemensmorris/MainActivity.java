@@ -66,25 +66,25 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        saveGame();
+        //saveGame();
         super.onBackPressed();
     }
 
     @Override
     protected void onPause() {
-        saveGame();
+        //saveGame();
         super.onPause();
     }
 
     @Override
     protected void onStop() {
-        saveGame();
+        //saveGame();
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        saveGame();super.onDestroy();
     }
 
     @Override

@@ -21,16 +21,18 @@
         android:orientation="vertical"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:id="@+id/map_group">
+        android:id="@+id/map_group"
+        android:checkedButton="@+id/rb_normal">
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Normal"
-            android:checked="true"/>
+            android:id="@+id/rb_normal"/>
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Big"/>
+            android:text="Big"
+            android:id="@+id/rb_big"/>
     </RadioGroup>
 
     <TextView android:text="Mode"
@@ -41,20 +43,23 @@
         android:orientation="vertical"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:id="@+id/mode_group">
+        android:id="@+id/mode_group"
+        android:checkedButton="@+id/rb_nine">
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Nine"
-            android:checked="true"/>
+            android:id="@+id/rb_nine"/>
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Six"/>
+            android:text="Six"
+            android:id="@+id/rb_six"/>
         <RadioButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Three"/>
+            android:text="Three"
+            android:id="@+id/rb_three"/>
     </RadioGroup>
 
 </LinearLayout>
