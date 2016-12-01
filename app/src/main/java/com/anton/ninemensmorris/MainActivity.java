@@ -3,6 +3,7 @@ package com.anton.ninemensmorris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.drawable.GradientDrawable;
 import android.os.PersistableBundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -51,6 +52,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         this.view = (CustomView)findViewById(R.id.surface_view);
         this.view.setStateText((TextView)findViewById(R.id.game_state));
+
+        LinearLayout main = (LinearLayout)findViewById(R.id.game_layout);
+
+        //portrait
+
+        if(getResources().getConfiguration().orientation == 1 )
+            main.setOrientation(LinearLayout.VERTICAL);
+        else
+            main.setOrientation(LinearLayout.HORIZONTAL);
+
 
         gamesList = new ArrayList();
 

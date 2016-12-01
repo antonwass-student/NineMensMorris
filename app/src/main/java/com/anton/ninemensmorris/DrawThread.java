@@ -1,6 +1,7 @@
 package com.anton.ninemensmorris;
 
 import android.graphics.Canvas;
+import android.provider.Settings;
 
 /**
  * Created by Anton on 2016-11-30.
@@ -25,21 +26,19 @@ public class DrawThread extends Thread{
 
     @Override
     public void run() {
-        double start_time = System.currentTimeMillis();
-
         try{
             while(running){
-
+                double draw_time = System.currentTimeMillis();
                 Canvas canvas = view.getHolder().lockCanvas();
 
                 if(canvas!=null){
                     view.draw(canvas);
 
                     view.getHolder().unlockCanvasAndPost(canvas);
-                    start_time = System.currentTimeMillis();
                 }
-
-                while(System.currentTimeMillis() - start_time < TIME_PER_TICK);
+                int time_to_wait = (int)(TIME_PER_TICK - (System.currentTimeMillis() - draw_time));
+                if(time_to_wait>0)
+                    this.sleep(time_to_wait);
             }
         }
         catch(Exception e){

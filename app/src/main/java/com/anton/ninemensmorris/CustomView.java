@@ -217,9 +217,9 @@ public class CustomView extends SurfaceView implements SurfaceHolder.Callback {
         if(game.getGameState().equals(NMMGame.GameStates.GAMEOVER)){
             stateText.append("Winner is " + game.getWinner().toString() + "!!!");
         }else{
-            stateText.append("\t Red: "+game.getRedCheckers().size() + " \t Blue: " + game.getBlueCheckers().size());
-            stateText.append("\t State: " + game.getGameState().toString());
-            stateText.append("\t Turn: " + game.getTurn().toString());
+            stateText.append("\n Red: "+game.getRedCheckers().size() + " \t Blue: " + game.getBlueCheckers().size());
+            stateText.append("\n State: " + game.getGameState().toString());
+            stateText.append("\n Turn: " + game.getTurn().toString());
 
         }
     }
